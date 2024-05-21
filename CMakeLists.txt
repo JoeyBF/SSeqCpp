@@ -7,7 +7,7 @@ project(
     LANGUAGES C CXX
 )
 
-set(BUILD_DOXYGEN OFF)
+set(BUILD_DOXYGEN ON)
 
 # The compiled library code is here
 add_subdirectory(src)

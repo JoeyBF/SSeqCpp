@@ -1,8 +1,9 @@
 #include "steenrodR.h"
 #include <array>
+#include <cstdint>
 #include <vector>
 
-namespace steenrodR{
+namespace steenrodR {
 
 using ArrMB = std::array<uint32_t, XI_MAX>;
 /* Return the maximum number `result` such that
@@ -121,10 +122,9 @@ void MulMilnor(const ArrMB& R, const ArrMB& S, std::vector<ArrMB>& result_app)
         }
     }
 }
-}
+}  // namespace steenrodR
 
-
-
-int main_test(int, char**, int&, const char*) {
+int main_test(int, char**, int&, const char*)
+{
     return 0;
 }

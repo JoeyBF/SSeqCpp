@@ -8,6 +8,9 @@
   packages = [
     pkgs.doxygen
     pkgs.git
+    pkgs.hyperfine
+    pkgs.sqlite
+    pkgs.tokei
   ];
 
   # https://devenv.sh/scripts/

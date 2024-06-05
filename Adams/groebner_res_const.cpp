@@ -89,6 +89,25 @@ struct IndexMMod
 };
 using IndexMMod1d = std::vector<IndexMMod>;
 
+/**
+ * Perform batch differential inversion on a list of input Mod objects.
+ *
+ * This function calculates the result of differential inversion for a batch of Mod objects.
+ * It iterates through the input Mod objects, performs differential inversion calculations,
+ * and updates the result Mod objects accordingly.
+ *
+ * Parameters:
+ * - xs: A vector of Mod objects representing the input values.
+ * - result: A reference to a vector of Mod objects where the results will be stored.
+ * - s: The size_t parameter indicating the index for the calculation.
+ *
+ * Returns:
+ * This function does not return a value. The results are stored in the 'result' vector.
+ *
+ * Note:
+ * If any input Mod object 'xs[i]' is not well defined during the calculation, the function
+ * will print an error message and exit with code -2.
+ */
 void AdamsResConst::DiffInvBatch(Mod1d xs, Mod1d& result, size_t s) const
 {
     Mod tmp_x, prod_x1, prod_x2;

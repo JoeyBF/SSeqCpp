@@ -378,6 +378,19 @@ inline std::string Serialize(const int1d& arr)
     return myio::StrCont("", ",", "", "", arr, [](int i) { return std::to_string(i); });
 }
 
+/**
+ * @brief Parses a JSON object to extract cohomology data and operations, then computes the corresponding relations using Groebner basis.
+ *
+ * This function takes a JSON object containing information about CW complexes, cells, and operations, along with the name of the cohomology, maximum degree 't_max', and a Cohomology object to store the results.
+ * It extracts the necessary data from the JSON object, computes relations based on the provided operations, and minimizes the relations using Groebner basis.
+ * The computed cohomology data is stored in the provided Cohomology object.
+ *
+ * @param js The JSON object containing information about CW complexes, cells, and operations.
+ * @param name_ The name of the cohomology.
+ * @param t_max The maximum degree for computations.
+ * @param coh The Cohomology object to store the computed cohomology data.
+ * @return 0 if the computation is successful, -1 if the cohomology name is not found in the JSON, -2 if the JSON is missing the 'operations' key.
+ */
 int GetCohFromJson(const json& js, const std::string& name_, int t_max, Cohomology& coh)
 {
     try {
@@ -856,6 +869,22 @@ Mod cell2Mod(const Cohomology& coh, const json& c)
 
 constexpr int MAP_T_MAX = 265;
 
+/**
+ * @brief Parses a JSON file containing CW complexes and maps, and retrieves information about a specific map.
+ *
+ * This function reads a JSON file named "Adams.json" and extracts information about a map specified by its name.
+ * The function retrieves the source and target CW complexes, images of cells under the map, suspension level, and filtration level.
+ *
+ * @param name_ The name of the map to retrieve information for.
+ * @param from_ The source CW complex of the map.
+ * @param to_ The target CW complex of the map.
+ * @param images The images of cells under the map.
+ * @param sus The suspension level of the map.
+ * @param fil The filtration level of the map.
+ * @return An integer status code: 0 for success, -1 if the map is not found, -2 if the number of images does not match the expected size,
+ *         -6 if the index of the cell is not found, -7 if the index exceeds the number of cells in the source complex, -8 if the map type is not recognized,
+ *         -9 if an error occurs during lift processing, -404 if an unsupported operation is encountered.
+ */
 int GetCohMapFromJson(const std::string& name_, std::string& from_, std::string& to_, Mod1d& images, int& sus, int& fil)
 {
     auto js = myio::load_json("Adams.json");

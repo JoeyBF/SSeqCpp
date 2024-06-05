@@ -27,6 +27,17 @@ void LoadJson(const std::string& diagram_name, nlohmann::json& root_json, nlohma
     }
 }
 
+/**
+ * Retrieves all database names associated with a given diagram.
+ *
+ * @param diagram_name The name of the diagram.
+ * @param names A vector to store the names of the databases.
+ * @param paths A vector to store the paths of the databases.
+ * @param isRing A vector to store whether each database is a ring or not.
+ * @param log Whether to log the path of the deduce log.
+ *
+ * @throws nlohmann::detail::exception If there is an error parsing the JSON.
+ */
 void GetAllDbNames(const std::string& diagram_name, std::vector<std::string>& names, std::vector<std::string>& paths, std::vector<int>& isRing, bool log)
 {
     using json = nlohmann::json;

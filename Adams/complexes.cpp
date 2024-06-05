@@ -885,6 +885,8 @@ int GetCohMapFromJson(const std::string& name_, std::string& from_, std::string&
         auto to = map_json.at("to").get<std::string>();
         from_ = from == "S0" ? ring : fmt::format("{}{}", ring, from);
         to_ = to == "S0" ? ring : fmt::format("{}{}", ring, to);
+        if (from_.empty())
+            from_ = "S0";
         if (to_.empty())
             to_ = "S0";
         sus = myio::get(map_json, "sus", 0);

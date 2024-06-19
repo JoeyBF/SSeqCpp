@@ -1,5 +1,6 @@
 {
   "diagrams": {
     "default": "diag"
-  }
+  },
+  "dir_website_ss": "webpages"
 }

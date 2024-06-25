@@ -76,8 +76,22 @@ enum class EnumDef : int
  */
 struct Staircase
 {
+    /// @brief A tall matrix that contains bases for subspaces. A spectral sequence can be seen as a
+    /// bigraded vector space equipped with a filtration
+    ///
+    /// V >= Z_2 >= Z_3 >= ... >= Z_inf >= B_inf >= ... >= B_3 >= B_2,
+    ///
+    /// where the Z_r are the cycles of the r-th page, and the B_r are the boundaries. This matrix
+    /// stores these bases one after the other. We use `levels` to indicate which subspace a given
+    /// row vector belongs to.
     int2d basis;
+
     int2d diffs; /* element {-1} means null */
+
+    /// @brief A list indicating levels. This list is exactly the same length as `basis` (i.e. the
+    /// number of its rows), and levels[i] is the level of the i-th row vector in `basis`. The
+    /// levels range from 0 to LEVEL_MAX, where values close to 0 correspond to [...], and values
+    /// close to LEVEL_MAX correspond to [...].
     int1d levels;
 };
 using Staircases = std::map<AdamsDeg, Staircase>;
@@ -885,7 +899,7 @@ void GetRAndDiff(const Staircases1d& nodes_ss, AdamsDeg deg_x, int1d x, int& r, 
 /* Return the minimal length of the crossing differentials */
 int GetCrossR(const Staircases1d& nodes_ss, AdamsDeg deg, int t_max, int Er);
 
-/* Return the first index with level >=`level_min` such that all levels above are already fixed 
+/* Return the first index with level >=`level_min` such that all levels above are already fixed
  * We do not support level_min < LEVEL_PERM yet
  */
 size_t GetFirstIndexOfFixedLevels(const Staircases1d& nodes_ss, AdamsDeg deg, int level_min);
@@ -897,7 +911,6 @@ size_t GetFirstIndexOfFixedLevels(const Staircases1d& nodes_ss, AdamsDeg deg, in
 bool IsPossTgtCofseq(const CofSeq& cofseq, size_t iCs, AdamsDeg deg, int r_max);
 size_t GetFirstIndexOfFixedLevelsCofseq(const CofSeq& cofseq, size_t iCs, AdamsDeg deg, int level_min);
 int GetCofseqCrossR(const Staircases1d& nodes_cofseq, const Staircases1d& nodes_ss, AdamsDeg deg, int t_max, int r_min, int result_min);
-
 
 /*--------------------------------------------------------------------------------------------
 ------------------------------------------    Utilities    -----------------------------------

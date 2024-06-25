@@ -10,6 +10,16 @@ void pop_front(Staircase& sc)
     sc.levels.erase(sc.levels.begin());
 }
 
+/**
+ * @brief Checks if it is possible that a d_r differential hits the bidegree, for any `r` between
+ * `LEVEL_MIN` and `r_max`.
+ *
+ * @param nodes_ss The ambient spectral sequence, represented as a collection of staircases.
+ * @param deg The target bidegree to check.
+ * @param r_max The maximum value of `r` to consider.
+ * @return True if there exists an `r` such that a d_r differential can hit the bidegree, false
+ * otherwise.
+ */
 bool IsPossTgt(const Staircases1d& nodes_ss, AdamsDeg deg, int r_max)
 {
     r_max = std::min(r_max, deg.s);
@@ -23,7 +33,7 @@ bool IsPossTgt(const Staircases1d& nodes_ss, AdamsDeg deg, int r_max)
 
 size_t GetFirstIndexOfFixedLevels(const Staircases1d& nodes_ss, AdamsDeg deg, int level_min)
 {
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg);
     size_t result = sc.levels.size();
     for (size_t i = sc.levels.size(); i-- > 0;) {
         if (sc.diffs[i] == NULL_DIFF || sc.levels[i] < level_min)
@@ -59,7 +69,7 @@ std::pair<int, int> Diagram::CountPossDrTgt(const Staircases1d& nodes_ss, int t_
 {
     std::pair<int, int> result;
     if (ut::has(nodes_ss.front(), deg_tgt)) {
-        const auto& sc_tgt = ut::GetRecentValue(nodes_ss, deg_tgt);
+        const Staircase& sc_tgt = ut::GetRecentValue(nodes_ss, deg_tgt);
         result.first = (int)GetFirstIndexOnLevel(sc_tgt, r);
         result.second = (int)GetFirstIndexOfFixedLevels(nodes_ss, deg_tgt, LEVEL_MAX - r) - result.first;
     }
@@ -74,7 +84,7 @@ std::pair<int, int> Diagram::CountPossDrSrc(const Staircases1d& nodes_ss, const 
 {
     std::pair<int, int> result;
     if (ut::has(nodes_ss.front(), deg_src)) {
-        const auto& sc_src = ut::GetRecentValue(nodes_ss, deg_src);
+        const Staircase& sc_src = ut::GetRecentValue(nodes_ss, deg_src);
         result.first = (int)GetFirstIndexOnLevel(sc_src, LEVEL_MAX - r);
         result.second = (int)GetFirstIndexOfFixedLevels(nodes_ss, deg_src, LEVEL_MAX - r) - result.first;
     }
@@ -115,7 +125,7 @@ int Diagram::NextRSrc(const Staircases1d& nodes_ss, AdamsDeg deg, int r) const
 void Diagram::CacheNullDiffs(const Staircases1d& nodes_ss, int t_max, AdamsDeg deg, SSFlag flag, NullDiff1d& nds) const
 {
     nds.clear();
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg);
     for (size_t i = 0; i < sc.diffs.size(); ++i) {
         if (sc.diffs[i] != NULL_DIFF)
             continue;
@@ -168,13 +178,14 @@ void Diagram::CacheNullDiffs(const Staircases1d& nodes_ss, int t_max, AdamsDeg d
     }
 }
 
+// FIXME This function is crucial, we need to look into it more!
 /* Return d_r(x) */
 int1d Diagram::GetDiff(const Staircases1d& nodes_ss, AdamsDeg deg_x, const int1d& x, int r) const
 {
     int1d result;
     if (x.empty())
         return result;
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg_x);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg_x);
     size_t first = GetFirstIndexOnLevel(sc, LEVEL_MAX - r);
     size_t last = GetFirstIndexOfNullOnLevel(sc, LEVEL_MAX - r);
     /* Compute x mod [0,first) */
@@ -197,7 +208,7 @@ int1d GetLevelAndDiff(const Staircases1d& nodes_ss, AdamsDeg deg_x, int1d x, int
     MyException::Assert(!x.empty(), "GetLevelAndDiff() para: !x.empty()");
 #endif
 
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg_x);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg_x);
     for (size_t i = 0; i < sc.levels.size(); ++i) {
         if (sc.levels[i] != level) {
             level = sc.levels[i];
@@ -238,7 +249,7 @@ int GetCrossR(const Staircases1d& nodes_ss, AdamsDeg deg, int t_max, int Er)
 {
     int result = R_PERM;
     for (int r = 1; r <= Er - 2; ++r) {
-        auto deg_x = deg + AdamsDeg{r, r};
+        AdamsDeg deg_x = deg + AdamsDeg{r, r};
         if (r + LEVEL_MIN > result)
             return result;
         if (deg_x.t > t_max)
@@ -248,7 +259,7 @@ int GetCrossR(const Staircases1d& nodes_ss, AdamsDeg deg, int t_max, int Er)
                 return result;
             continue;
         }
-        auto& sc = ut::GetRecentValue(nodes_ss, deg_x);
+        Staircase sc = ut::GetRecentValue(nodes_ss, deg_x);
         if (!sc.levels.empty() && sc.levels.back() > LEVEL_MAX / 2) {
             int r1 = LEVEL_MAX - sc.levels.back();
             if (r + r1 < result)
@@ -258,6 +269,18 @@ int GetCrossR(const Staircases1d& nodes_ss, AdamsDeg deg, int t_max, int Er)
     return result;
 }
 
+/**
+ * Sets the differential staircase for the given parameters.
+ *
+ * @param iCw the index of the CW-spectrum
+ * @param deg_x the bidegree of x
+ * @param x_ the input vector x
+ * @param dx the input vector dx
+ * @param r the value of r
+ * @param flag something probably I'm sure
+ *
+ * @throws idk
+ */
 void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1d& dx, int r, SSFlag flag)
 {
     /*if (deg_x == AdamsDeg(10, 135) && r == 2 && (x_ == int1d{0} || x_ == int1d{1} || x_ == int1d{0, 1})) {
@@ -266,22 +289,33 @@ void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1
             std::cout << "debug\n";
     }*/
 
-    /* NULL_DIFF checking */
+    // Notes:
+    // This function and SetImageSc() are closely related. It's useful to look at them both together.
+
+    // This is the degree of d_r(x)
     AdamsDeg deg_dx = deg_x + AdamsDeg{r, r - 1};
+
+    /* NULL_DIFF checking */
+    // NULL_DIFF is a sentinel value, so if x_ is NULL_DIFF, this means that we should set the image
+    // at r instead of r-1 like in the other cases. I'm not sure what "set the image at" means
+    // exactly, apart from being a call to `SetImageSc()`, almost always with NULL_DIFF as the x
+    // argument.
     if (x_ == NULL_DIFF) {
         SetImageSc(iCw, deg_dx, dx, NULL_DIFF, r, flag);
         return;
     }
 
     /* Triangularize x */
+    // This `if` is just an optimization. It's not really necessary.
     if (x_.empty()) {
         if (dx != NULL_DIFF && !dx.empty())
             SetImageSc(iCw, deg_dx, dx, NULL_DIFF, r - 1, flag);
         return;
     }
-    auto& nodes_ss = GetSS(iCw);
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg_x);
-    size_t first_Nmr = GetFirstIndexOnLevel(sc, LEVEL_MAX - r);
+
+    Staircases1d& nodes_ss = GetSS(iCw);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg_x);
+    size_t first_Nmr = GetFirstIndexOnLevel(sc, LEVEL_MAX - r);  // What does Nm mean?
     int1d x = lina::Residue(sc.basis.begin(), sc.basis.begin() + first_Nmr, x_);
     if (x.empty()) {
         if (dx != NULL_DIFF && !dx.empty())
@@ -310,10 +344,10 @@ void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1
 
     /* ss to cofseq */
     if ((flag & SSFlag::cofseq) && r == R_PERM) {
-        const auto& ind_cofs = GetIndexCof(iCw);
-        for (auto& ind_cof : ind_cofs) {
-            auto& cofseq = cofseqs_[ind_cof.iCof];
-            auto iCs = (size_t)ind_cof.iCs;
+        const std::vector<IndexCof>& ind_cofs = GetIndexCof(iCw);
+        for (IndexCof ind_cof : ind_cofs) {
+            CofSeq& cofseq = cofseqs_[ind_cof.iCof];
+            size_t iCs = (size_t)ind_cof.iCs;
             if (!ut::has(cofseq.nodes_cofseq[iCs].front(), deg_x))
                 cofseq.nodes_cofseq[iCs].front()[deg_x] = {};
             SetDiffScCofseq(cofseq, ind_cof.iCs, deg_x, x, NULL_DIFF, 0, flag);
@@ -321,6 +355,8 @@ void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1
     }
 
     if (level_image_new != -1) {
+        // This is proof that levels represent both cycles and boundaries. The cutoff is LEVEL_MAX /
+        // 2 == 5000.
         if (level_image_new < LEVEL_MAX / 2) {
             /* Set an image */
             AdamsDeg deg_image_new = deg_x + AdamsDeg{level_image_new, level_image_new - 1};
@@ -341,15 +377,17 @@ void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1
 
 void Diagram::SetImageSc(IndexCw iCw, AdamsDeg deg_dx, const int1d& dx_, const int1d& x, int r, SSFlag flag)
 {
-    const auto& name = GetCwName(iCw);
-    auto& nodes_ss = GetSS(iCw);
+    const std::string& name = GetCwName(iCw);
+    Staircases1d& nodes_ss = GetSS(iCw);
+
+    // This is the degree of a vector whose d_r would land in deg_dx
     AdamsDeg deg_x = deg_dx - AdamsDeg{r, r - 1};
 
     // if (nodes_ss.size() == 2 && deg_dx == AdamsDeg(16, 162 + 16) && r == 2 && dx_ == int1d{6} && name == "Joker") ////
     //     throw InteruptAndSaveException(0, "bug");
 
     /* If dx is in Im(d_{r-1}) then x is in Ker(d_r) */
-    const auto& sc = ut::GetRecentValue(nodes_ss, deg_dx);
+    const Staircase& sc = ut::GetRecentValue(nodes_ss, deg_dx);
     size_t first_r = GetFirstIndexOnLevel(sc, r);
     int1d dx = lina::Residue(sc.basis.begin(), sc.basis.begin() + first_r, dx_);
     if (dx.empty()) {
@@ -381,10 +419,10 @@ void Diagram::SetImageSc(IndexCw iCw, AdamsDeg deg_dx, const int1d& dx_, const i
 
     /* ss to cofseq */
     if (flag & SSFlag::cofseq) {
-        const auto& ind_cofs = GetIndexCof(iCw);
-        for (auto& ind_cof : ind_cofs) {
-            auto& cofseq = cofseqs_[ind_cof.iCof];
-            auto iCs = (size_t)ind_cof.iCs;
+        const std::vector<IndexCof>& ind_cofs = GetIndexCof(iCw);
+        for (IndexCof ind_cof : ind_cofs) {
+            CofSeq& cofseq = cofseqs_[ind_cof.iCof];
+            size_t iCs = ind_cof.iCs;
             if (ut::has(cofseq.nodes_cofseq[iCs].front(), deg_dx))
                 ReSetScCofseq(cofseq, ind_cof.iCs, deg_dx, flag);
         }
@@ -1231,4 +1269,3 @@ int Diagram::SetDiffLeibnizCofseq(CofSeq& cofseq, size_t iCs, AdamsDeg deg_x, co
     }
     return count;
 }
-

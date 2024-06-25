@@ -43,6 +43,33 @@ int2d& SimplifySpace(int2d& spaceV)
     return spaceV;
 }
 
+/**
+ * @brief Calculates the residue of a given vector `v` with respect to a range of vectors in
+ * `spaceV`. The residue is obtained by adding each vector in `spaceV` that contains the first
+ * element of `v` to `v`. The function returns the updated `v`.
+ *
+ * @details Recall that if a vector space is equipped with a basis, then every subspace has a
+ * preferred basis, represented by the row-reduced matrix whose rows span the subspace. A less
+ * well-known fact is that the quotient by this subspace can be identified with another subspace in
+ * a more-or-less canonical way. The ambient basis defines an inner product, and this "quotient
+ * subspace" is the orthogonal complement with respect to that product.
+ *
+ * This function is the quotient map; in other words, it projects all vectors in the ambient space
+ * onto the orthogonal complement. A vector belongs to the original space iff this function reduces
+ * it to zero.
+ *
+ * We want to take iterators to matrix rows as input because we store lots of subspaces in a single
+ * very tall matrix, so we need a way to only operate on the rows we need. See Staircase::basis.
+ *
+ * @param spaceV_first iterator pointing to the beginning of the range of vectors in `spaceV`
+ * @param spaceV_last iterator pointing to the end of the range of vectors in `spaceV`
+ * @param v the vector to calculate the residue of
+ *
+ * @return the updated `v` after adding each vector in `spaceV` that contains the first element of
+ *         `v` to `v`
+ *
+ * @throws None
+ */
 int1d Residue(int2dIt spaceV_first, int2dIt spaceV_last, int1d v)
 {
     for (auto p_vi = spaceV_first; p_vi != spaceV_last; ++p_vi)

@@ -248,6 +248,16 @@ bool has(const T& map, const K& key)
     return map.find(key) != map.end();
 }
 
+/**
+ * @brief Retrieves the most recent nonzero `Staircase` for the given `key` from the latest page.
+ *
+ * @tparam Maps Type of the hashmap.
+ * @tparam K Type of the key.
+ * @param maps A list of spectral sequence pages, referred to as `Staircases1d`.
+ * @param key An Adams degree.
+ * @return The most recent `Staircase` associated with the given `key`.
+ * @throws std::out_of_range if the key is not found in any page.
+ */
 template <typename Maps, typename K>
 const auto& GetRecentValue(Maps& maps, const K& key)
 {
@@ -257,6 +267,15 @@ const auto& GetRecentValue(Maps& maps, const K& key)
     throw std::out_of_range("Recent Value not found");
 }
 
+/**
+ * @brief Finds the index of the first occurrence of the given key in the vector.
+ *
+ * @tparam T The type of elements in the vector.
+ * @tparam K The type of the key.
+ * @param vec The vector to search in.
+ * @param key The key to search for.
+ * @return The index of the first occurrence of the key in the vector, or -1 if not found.
+ */
 template <typename T>
 int IndexOf(const std::vector<T>& vec, const T& key)
 {
@@ -264,6 +283,14 @@ int IndexOf(const std::vector<T>& vec, const T& key)
     return it != vec.end() ? int(it - vec.begin()) : -1;
 }
 
+/**
+ * @brief Finds the index of the first element in the vector `vec` that satisfies the predicate
+ * `fnEq`. If no such element is found, -1 is returned.
+ *
+ * @param vec The vector to search in.
+ * @param fnEq The predicate used to determine if an element is the desired one.
+ * @return The index of the first element that satisfies the predicate, or -1 if not found.
+ */
 template <typename T, typename FnEq>
 int IndexOf(const std::vector<T>& vec, FnEq fnEq)
 {
@@ -271,11 +298,19 @@ int IndexOf(const std::vector<T>& vec, FnEq fnEq)
     return it != vec.end() ? int(it - vec.begin()) : -1;
 }
 
+/**
+ * Find the index of the key in a sorted vector using binary search.
+ *
+ * @param sorted The sorted vector to search in.
+ * @param key The key to find in the vector.
+ *
+ * @return The index of the key in the vector if found, -1 otherwise.
+ */
 template <typename T>
 int IndexOfInSorted(const std::vector<T>& sorted, const T& key)
 {
-	auto it = std::lower_bound(sorted.begin(), sorted.end(), key);
-	return it != sorted.end() && *it == key ? int(it - sorted.begin()) : -1;
+    auto it = std::lower_bound(sorted.begin(), sorted.end(), key);
+    return it != sorted.end() && *it == key ? int(it - sorted.begin()) : -1;
 }
 
 /* The container `map` maps a key to a collection of type T */

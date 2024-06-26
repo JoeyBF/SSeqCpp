@@ -315,7 +315,7 @@ void Diagram::SetDiffSc(IndexCw iCw, AdamsDeg deg_x, const int1d& x_, const int1
 
     Staircases1d& nodes_ss = GetSS(iCw);
     const Staircase& sc = ut::GetRecentValue(nodes_ss, deg_x);
-    size_t first_Nmr = GetFirstIndexOnLevel(sc, LEVEL_MAX - r);  // What does Nm mean?
+    size_t first_Nmr = GetFirstIndexOnLevel(sc, LEVEL_MAX - r);  // Nm means 'N minus', where N is LEVEL_MAX
     int1d x = lina::Residue(sc.basis.begin(), sc.basis.begin() + first_Nmr, x_);
     if (x.empty()) {
         if (dx != NULL_DIFF && !dx.empty())

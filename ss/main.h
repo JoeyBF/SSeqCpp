@@ -74,24 +74,53 @@ enum class EnumDef : int
  * d2[7]=[7]
  * d2[8]=[?]
  */
+/// @brief A vector space that tracks differential information about its vectors.
+///
+/// @details A spectral sequence can be seen as a bigraded vector space equipped with a filtration
+///
+/// V >= Z_2 >= Z_3 >= ... >= Z_inf >= B_inf >= ... >= B_3 >= B_2,
+///
+/// where the Z_r are the cycles of the r-th page, and the B_r are the boundaries. A `Staircase`
+/// stores this sequence of subspaces, where cycles have large levels and boundaries have small
+/// ones. Because this is real life and not theory, we also set inf to be the concrete value
+/// LEVEL_PERM, which is currently 9000. We can think of a `Staircase` more concretely as the
+/// filtered vector space
+///
+/// V == L_{LEVEL_MAX} >= L_{LEVEL_MAX - 1} >= ... >= L_{LEVEL_PERM} >= L_{LEVEL_PERM - 1} >= ... >=
+/// L_{LEVEL_MIN + 1} >= L_{LEVEL_MIN}.
+///
+/// The value at the E_inf page will be the quotient L_{LEVEL_PERM} / L_{LEVEL_PERM - 1}.
+///
+/// We store this sequence of subspaces as a matrix, where we first list a basis for B_2, then add
+/// vectors if need be to get a basis for B_3, and so on until we have a basis for Z_2 (and then
+/// V?). This means that different rows might belong to different subspaces; to track this, we use
+/// the `levels` attribute.
+///
+/// Finally, we use the `diffs` attribute to store the differential information. This is a matrix of
+/// the same number of rows as `basis`, where the i-th row represents the differential of the i-th
+/// vector in the basis. This needs to be interpreted as living in the appropriate bidegree,
+/// depending on the level of the vector in question. The sentinel value `NULL_DIFF` is used to
+/// indicate that we don't know what the differential is exactly, but the vector still lives at
+/// least at that level.
+///
+/// @note Note that, if a vector lives in level 2, its "differential" in our sense would be the
+/// vector that supports the d_2 that hits it. This is because level 2 is less than LEVEL_PERM, and
+/// therefore indicates a boundary. However, that vector would in turn have level 9998, and its
+/// differential would be the vector we started with.
 struct Staircase
 {
-    /// @brief A tall matrix that contains bases for subspaces. A spectral sequence can be seen as a
-    /// bigraded vector space equipped with a filtration
-    ///
-    /// V >= Z_2 >= Z_3 >= ... >= Z_inf >= B_inf >= ... >= B_3 >= B_2,
-    ///
-    /// where the Z_r are the cycles of the r-th page, and the B_r are the boundaries. This matrix
-    /// stores these bases one after the other. We use `levels` to indicate which subspace a given
-    /// row vector belongs to.
+    /// @brief A basis of the vector space. These are arranged such that a basis of B_2 is specified
+    /// first, which together with 0 or more of the following vectors forms a basis of B_3, and so
+    /// on until we reach a basis for Z_2. The idea is that taking an initial segment of the matrix
+    /// gives us a "lower" segment of the filtration described by the staircase.
     int2d basis;
 
     int2d diffs; /* element {-1} means null */
 
     /// @brief A list indicating levels. This list is exactly the same length as `basis` (i.e. the
     /// number of its rows), and levels[i] is the level of the i-th row vector in `basis`. The
-    /// levels range from 0 to LEVEL_MAX, where values close to 0 correspond to [...], and values
-    /// close to LEVEL_MAX correspond to [...].
+    /// levels range from LEVEL_MIN to LEVEL_MAX, where values close to LEVEL_MIN correspond to
+    /// boundaries, and values close to LEVEL_MAX correspond to cycles.
     int1d levels;
 };
 using Staircases = std::map<AdamsDeg, Staircase>;

@@ -141,6 +141,7 @@ Staircases DBSS::load_ss(const std::string& table_prefix) const
     Staircases nodes_ss;
     Statement stmt(*this, "SELECT base, COALESCE(diff, \"-1\"), level, s, t FROM " + table_prefix + "_ss;");
     int count = 0;
+    // This initialization proves that basis, diffs and levels all have the same length.
     while (stmt.step() == MYSQLITE_ROW) {
         ++count;
         int1d base = myio::Deserialize<int1d>(stmt.column_str(0));
